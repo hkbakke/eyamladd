@@ -28,7 +28,7 @@ def encrypt(content, public_key):
         '--output', 'block',
         ]
 
-    p = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    p = subprocess.run(cmd, check=True, capture_output=True, universal_newlines=True)
 
     # This ugly mess is to get ruamel.yaml to handle the block output from
     # eyaml as proper folded style block scalars. By doing it this way we can
