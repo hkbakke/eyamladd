@@ -49,7 +49,7 @@ def encrypt(content, public_key):
     # getting long.
     #
     output = [line.strip() for line in p.stdout.splitlines()]
-    return FoldedScalarString('{}\n'.format('\a'.join(output)))
+    return FoldedScalarString('{}\n'.format('\a\n'.join(output)))
 
 def encrypt_all(data, public_key):
     """
