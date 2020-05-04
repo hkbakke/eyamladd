@@ -48,6 +48,7 @@ def encrypt(content, public_key):
     # style block scalar, but it is much less readable when the strings are
     # getting long.
     #
+    LOGGER.debug('Eyaml command output:\n%s', p.stdout)
     output = [line.strip() for line in p.stdout.splitlines()]
     return FoldedScalarString('{}\n'.format('\a\n'.join(output)))
 
@@ -122,8 +123,6 @@ def main():
     LOGGER.setLevel(log_level)
     console = logging.StreamHandler()
     LOGGER.addHandler(console)
-    formatter = logging.Formatter('%(levelname)s: %(message)s')
-    console.setFormatter(formatter)
 
     eyaml_public_key = Path(args.eyaml_public_key)
     LOGGER.debug('Eyaml public key: %s', eyaml_public_key)
