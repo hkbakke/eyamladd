@@ -137,6 +137,9 @@ def main():
                        help='read clear text data from json file')
     args = parser.parse_args()
 
+    if args.write and not args.filename:
+        parser.error('-w/--write requires -f/--filename')
+
     # Set up logging
     if args.verbose:
         log_level = 'DEBUG'
