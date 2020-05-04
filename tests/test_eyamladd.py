@@ -114,3 +114,37 @@ test: >
 
         eyamladd.merge(dst, src)
         assert dst == merged
+
+    def test_encrypt_all(self, monkeypatch):
+        def mockencrypt(data, public_key):
+            return FoldedScalarString('encrypted')
+
+        data = {
+            'test1': 'cleartext1',
+            'test2': {
+                'test3': 'cleartext2',
+                'test4': [
+                    'cleartext3',
+                    {
+                        'test5': 'cleartext4'
+                    },
+                ]
+            }
+        }
+
+        output = {
+            'test1': 'encrypted',
+            'test2': {
+                'test3': 'encrypted',
+                'test4': [
+                    'encrypted',
+                    {
+                        'test5': 'encrypted'
+                    },
+                ]
+            }
+        }
+
+        monkeypatch.setattr(eyamladd, "encrypt", mockencrypt)
+        result = dict(eyamladd.encrypt_all(data, None))
+        assert result == output
