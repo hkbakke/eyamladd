@@ -25,15 +25,20 @@ provided in the input data.
 # Usage
 By default eyamladd only outputs the resulting merged file to stdout. Add the
 `--write` argument to actually update the target file. The update is performed
-atomically.
+atomically. Note thate these are only examples. Do not put cleartext secrets
+directly on the command line!
 
-    # Consume cleartext properties from stdin from other scripts, encrypt the
-    # leaf values and merge into target.eyaml.
-    # This is only an example, do not put cleartext secrets directly on the
-    # command line!
+    # Consume cleartext properties from stdin, encrypt the leaf values and
+    # merge into target.eyaml.
     printf '{"passphrase": "secret_stuff"}' | eyamladd \
         --eyaml-public-key eyaml-public-key.asc \
         --filename target.eyaml \
+        --stdin
+
+    # Same as above, but without merging into a file. Useful if all you want to
+    # do is encrypt the input.
+    printf '{"passphrase": "secret_stuff"}' | eyamladd \
+        --eyaml-public-key eyaml-public-key.asc \
         --stdin
 
     # Read cleartext properties from file instead of stdin
