@@ -123,12 +123,13 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-k', '--eyaml-public-key', metavar='PUBKEY',
                         required=True, help='eyaml public key')
-    parser.add_argument('-f', '--filename', metavar='FILENAME',
-                        help='yaml file to merge eyaml data into')
-    parser.add_argument('-w', '--write', action='store_true',
-                        help='update file instead of printing to stdout')
     parser.add_argument('-s', '--with-document-start', action='store_true',
                         help='add document start indicator (---)')
+    merge_group = parser.add_argument_group('file merging')
+    merge_group.add_argument('-f', '--filename', metavar='FILENAME',
+                             help='(e)yaml file to merge eyaml data into')
+    merge_group.add_argument('-w', '--write', action='store_true',
+                             help='update file instead of printing to stdout')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-', '--stdin', action='store_true',
                        help='read clear text data from stdin')
@@ -164,12 +165,12 @@ def main():
     LOGGER.debug('In data encrypted:\n%s', json.dumps(in_data_enc, indent=2))
 
     content = {}
+    yaml = YAML()
 
     if args.filename:
         filename = Path(args.filename)
         LOGGER.debug('Input file: %s', filename)
 
-        yaml = YAML()
         try:
             with open(filename, 'r') as f:
                 content = yaml.load(f)
