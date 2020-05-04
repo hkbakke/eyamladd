@@ -41,3 +41,9 @@ atomically.
         --eyaml-public-key eyaml-public-key.asc \
         --filename target.eyaml \
         --json-file cleartext.json
+
+# Tests
+
+    # Use a venv or install with --user
+    pip3 install -r test-requirements.txt --upgrade
+    PYTHONPATH=src/ pytest --cov=eyamladd -vv

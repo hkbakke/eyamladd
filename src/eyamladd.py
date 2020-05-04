@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""
+Scripting friendly helper for eyaml.
+
+The module takes json input and encrypts all leaf nodes using eyaml and the
+pkcs7 public key. The eyaml encrypted version of the json data is then merged
+into a yaml/eyaml file.
+"""
+
 import argparse
 import json
 import logging
@@ -42,6 +50,10 @@ def parse_eyaml_block(block):
     return FoldedScalarString('{}\n'.format('\a\n'.join(lines)))
 
 def encrypt(content, public_key):
+    """
+    Encrypts a string using eyaml and a pkcs7 public key and returns a
+    FoldedScalarString.
+    """
     cmd = [
         EYAML_BIN,
         'encrypt',
@@ -56,7 +68,8 @@ def encrypt(content, public_key):
 
 def encrypt_all(data, public_key):
     """
-    The input must be a dictionary. All leaf nodes will be eyaml encrypted.
+    Iterates over an input dictionary and encrypts all leaf nodes using the
+    public key.
     """
     def iter_dict(data):
         for key, value in data.items():
@@ -79,26 +92,33 @@ def encrypt_all(data, public_key):
     yield from iter_dict(data)
 
 def merge(dst, src):
-    for k, v in src.items():
-        if isinstance(v, list):
-            if k not in dst:
-                dst[k] = deepcopy(v)
+    """
+    Deep merges the dictionary src into dst. List items are appended to any
+    existing lists.
+    """
+    for key, value in src.items():
+        if isinstance(value, list):
+            if key not in dst:
+                dst[key] = deepcopy(value)
             else:
-                dst[k].extend(v)
-        elif isinstance(v, abc.Mapping):
-            if k not in dst:
-                dst[k] = deepcopy(v)
+                dst[key].extend(value)
+        elif isinstance(value, abc.Mapping):
+            if key not in dst:
+                dst[key] = deepcopy(value)
             else:
-                merge(dst[k], v)
-        elif isinstance(v, set):
-            if k not in dst:
-                dst[k] = v.copy()
+                merge(dst[key], value)
+        elif isinstance(value, set):
+            if key not in dst:
+                dst[key] = value.copy()
             else:
-                dst[k].update(v.copy())
+                dst[key].update(value.copy())
         else:
-            dst[k] = copy(v)
+            dst[key] = copy(value)
 
 def main():
+    """
+    Main program flow
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-k', '--eyaml-public-key', metavar='PUBKEY',
@@ -168,6 +188,7 @@ def main():
             yaml.dump(merged, f)
             Path(f.name).rename(filename)
 
+    return 0
 
 if __name__ == '__main__':
     sys.exit(main())
