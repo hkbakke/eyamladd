@@ -60,3 +60,57 @@ test: >
 
         assert result == output
 
+    def test_deep_merge(self):
+        src = {
+            'key1b': 'newvalue1b',
+            'newkey1': 'newvalue1',
+            'key1c': {
+                'key2b': {
+                    'key3b': [
+                        'item2'
+                    ]
+                }
+            }
+        }
+
+        dst = {
+            'key1a': 'value1a',
+            'key1b': 'value1b',
+            'key1c': {
+                'key2a': 'value2a',
+                'key2b': {
+                    'key3a': 'value3a',
+                    'key3b': [
+                        'item1',
+                        'item2',
+                        {
+                            'key5a': 'value5a'
+                        }
+                    ]
+                }
+            }
+        }
+
+        # Note that lists are appended to when merged
+        merged = {
+            'key1a': 'value1a',
+            'key1b': 'newvalue1b',
+            'newkey1': 'newvalue1',
+            'key1c': {
+                'key2a': 'value2a',
+                'key2b': {
+                    'key3a': 'value3a',
+                    'key3b': [
+                        'item1',
+                        'item2',
+                        {
+                            'key5a': 'value5a',
+                        },
+                        'item2'
+                    ]
+                }
+            }
+        }
+
+        eyamladd.merge(dst, src)
+        assert dst == merged
