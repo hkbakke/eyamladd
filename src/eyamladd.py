@@ -3,7 +3,6 @@
 import argparse
 import json
 import logging
-import os
 import subprocess
 import sys
 from collections import abc
@@ -19,6 +18,29 @@ LOGGER = logging.getLogger()
 EYAML_BIN = 'eyaml'
 
 
+def parse_eyaml_block(block):
+    """
+    This ugly mess is to get ruamel.yaml to handle the block output from
+    eyaml as proper folded style block scalars. By doing it this way we can
+    freely use the return value from this function in yaml files without
+    thinking about formatting when dumping back to the eyaml file.
+
+    Basically the following is happening:
+
+     1. Remove superfluous spaces and line breaks in every line of the output
+     2. Join the lines using the BEL (\a) character, which is the way ruamel
+        yaml represents block folds in the FoldedScalarString object
+     3. Ensure the last line has a newline to avoid the block being
+        represented as block style with the block chomping indicator set (>-).
+     4. Then ensure that blob of text is a FoldedScalarString
+
+    It is also possible to just return a long string instead of a folded
+    style block scalar, but it is much less readable when the strings are
+    getting long.
+    """
+    lines = [line.strip() for line in block.splitlines()]
+    return FoldedScalarString('{}\n'.format('\a\n'.join(lines)))
+
 def encrypt(content, public_key):
     cmd = [
         EYAML_BIN,
@@ -29,28 +51,8 @@ def encrypt(content, public_key):
         ]
 
     p = subprocess.run(cmd, check=True, capture_output=True, universal_newlines=True)
-
-    # This ugly mess is to get ruamel.yaml to handle the block output from
-    # eyaml as proper folded style block scalars. By doing it this way we can
-    # freely use the return value from this function in yaml files without
-    # thinking about formatting when dumping back to the eyaml file.
-    #
-    # Basically the following is happening:
-    #
-    # 1. Remove superfluous spaces and line breaks in every line of the output
-    # 2. Join the lines using the BEL (\a) character, which is the way ruamel
-    #    yaml represents block folds in the FoldedScalarString object
-    # 3. Ensure the last line has a newline to avoid the block being
-    #    represented as block style with the block chomping indicator set (>-).
-    # 4. Then ensure that blob of text is a FoldedScalarString
-    #
-    # It is also possible to just return a long string instead of a folded
-    # style block scalar, but it is much less readable when the strings are
-    # getting long.
-    #
     LOGGER.debug('Eyaml command output:\n%s', p.stdout)
-    output = [line.strip() for line in p.stdout.splitlines()]
-    return FoldedScalarString('{}\n'.format('\a\n'.join(output)))
+    return parse_eyaml_block(p.stdout)
 
 def encrypt_all(data, public_key):
     """
