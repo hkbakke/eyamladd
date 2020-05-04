@@ -123,7 +123,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-k', '--eyaml-public-key', metavar='PUBKEY',
                         required=True, help='eyaml public key')
-    parser.add_argument('-f', '--filename', metavar='FILENAME', required=True,
+    parser.add_argument('-f', '--filename', metavar='FILENAME',
                         help='yaml file to merge eyaml data into')
     parser.add_argument('-w', '--write', action='store_true',
                         help='update file instead of printing to stdout')
@@ -149,16 +149,6 @@ def main():
     eyaml_public_key = Path(args.eyaml_public_key)
     LOGGER.debug('Eyaml public key: %s', eyaml_public_key)
 
-    filename = Path(args.filename)
-    LOGGER.debug('Input file: %s', filename)
-
-    yaml = YAML()
-    try:
-        with open(filename, 'r') as f:
-            content = yaml.load(f)
-    except FileNotFoundError:
-        content = {}
-
     if args.stdin:
         in_data = json.load(sys.stdin)
     elif args.json_file:
@@ -170,12 +160,28 @@ def main():
 
     in_data_enc = dict(encrypt_all(in_data, eyaml_public_key))
 
-    LOGGER.debug('Original content:\n%s', json.dumps(content, indent=2))
     LOGGER.debug('In data:\n%s', json.dumps(in_data, indent=2))
     LOGGER.debug('In data encrypted:\n%s', json.dumps(in_data_enc, indent=2))
 
-    merged = deepcopy(content)
-    merge(merged, in_data_enc)
+    content = {}
+
+    if args.filename:
+        filename = Path(args.filename)
+        LOGGER.debug('Input file: %s', filename)
+
+        yaml = YAML()
+        try:
+            with open(filename, 'r') as f:
+                content = yaml.load(f)
+        except FileNotFoundError:
+            pass
+
+    if content:
+        LOGGER.debug('Original content:\n%s', json.dumps(content, indent=2))
+        merged = deepcopy(content)
+        merge(merged, in_data_enc)
+    else:
+        merged = in_data_enc
 
     if args.with_document_start:
         yaml.explicit_start = True
