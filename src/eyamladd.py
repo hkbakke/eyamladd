@@ -58,11 +58,12 @@ def encrypt(content, public_key):
         EYAML_BIN,
         'encrypt',
         '--string', content,
-        '--pkcs7-public-key', public_key,
+        '--pkcs7-public-key', str(public_key),
         '--output', 'block',
         ]
 
-    p = subprocess.run(cmd, check=True, capture_output=True, universal_newlines=True)
+    p = subprocess.run(cmd, check=True, stdout=subprocess.PIPE,
+                       universal_newlines=True)
     LOGGER.debug('Eyaml command output:\n%s', p.stdout)
     return parse_eyaml_block(p.stdout)
 
@@ -175,7 +176,7 @@ def main():
         LOGGER.debug('Input file: %s', filename)
 
         try:
-            with open(filename, 'r') as f:
+            with open(str(filename), 'r') as f:
                 content = yaml.load(f)
         except FileNotFoundError:
             pass
@@ -194,7 +195,7 @@ def main():
 
     if args.write:
         print("Writing changes to '{}'".format(filename))
-        with NamedTemporaryFile(dir=filename.parent, prefix='%s.' % filename.name, delete=False) as f:
+        with NamedTemporaryFile(dir=str(filename.parent), prefix='%s.' % filename.name, delete=False) as f:
             yaml.dump(merged, f)
             Path(f.name).rename(filename)
 
