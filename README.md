@@ -11,12 +11,13 @@ provided in the input data.
 # Requirements
 ## Using pip and gem
 
-    pip3 install -r requirements.txt
+    pip3 install -r requirements.txt --user
     gem install hiera-eyaml
 
 ## Debian
 
-    apt install hiera-eyaml python3-ruamel.yaml
+    pip3 install -r requirements.txt --user
+    apt install hiera-eyaml
 
 # Installation
 
